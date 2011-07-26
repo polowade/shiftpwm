@@ -156,8 +156,8 @@ void CShiftPWM::SetAmountOfRegisters(unsigned char newAmount){
 bool CShiftPWM::LoadNotTooHigh(void){
 	// This function calculates if the interrupt load would become higher than 0.9 and prints an error if it would.
 	// This is with inverted outputs, which is worst case. Without inverting, it would be 42 per register.
-	float interruptDuration = 97+43* m_amountOfRegisters;	
-	float interruptFrequency = m_ledFrequency*m_maxBrightness;
+	float interruptDuration = 97+43* (float) m_amountOfRegisters;	
+	float interruptFrequency = (float) m_ledFrequency* (float) m_maxBrightness;
 	float load = interruptDuration*interruptFrequency/F_CPU;
 
 	if(load > 0.9){
@@ -218,7 +218,7 @@ void CShiftPWM::InitTimer1(void){
    * We want the frequency of the timer to be (LED frequency)*(number of brightness levels)
    * So the value we want for OCR1A is: timer clock frequency/(LED frequency * number of bightness levels)-1 */
   m_prescaler = 1;
-  OCR1A = round(F_CPU/(m_ledFrequency*(m_maxBrightness+1)))-1;
+  OCR1A = round((float) F_CPU/((float) m_ledFrequency*((float) m_maxBrightness+1)))-1;
   /* Finally enable the timer interrupt 
   /* See datasheet  15.11.8) */
   bitSet(TIMSK1,OCIE1A);
@@ -236,7 +236,7 @@ void CShiftPWM::InitTimer2(void){
   /*  Select clock source: internal I/O clock, calculate most suitable prescaler
    *  This is only an 8 bit timer, so choose the prescaler so that OCR2A fits in 8 bits.
    *  See table 15-5 in the datasheet. */
-  int compare_value =  F_CPU/(m_ledFrequency*(m_maxBrightness+1))-1;
+  int compare_value =  round((float) F_CPU/((float) m_ledFrequency*((float) m_maxBrightness+1))-1);
   if(compare_value <= 255){
     m_prescaler = 1;
     bitClear(TCCR2B,CS22); bitClear(TCCR2B,CS21); bitClear(TCCR2B,CS20);
@@ -267,7 +267,7 @@ void CShiftPWM::InitTimer2(void){
    * One period of the timer, from 0 to OCR2A will therefore be (OCR2A+1)/(timer clock frequency).
    * We want the frequency of the timer to be (LED frequency)*(number of brightness levels)
    * So the value we want for OCR2A is: timer clock frequency/(LED frequency * number of bightness levels)-1 */
-  OCR2A = round((F_CPU/m_prescaler)/(m_ledFrequency*(m_maxBrightness+1)))-1;
+  OCR2A = round(   (  (float) F_CPU / (float) m_prescaler ) /  ( (float) m_ledFrequency*( (float) m_maxBrightness+1) ) -1);
   /* Finally enable the timer interrupt 
   /* See datasheet  15.11.8) */
   bitSet(TIMSK2,OCIE2A);
