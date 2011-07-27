@@ -64,8 +64,8 @@
    
  */
  
-#ifndef ShiftPWM_SPI_h
-#define ShiftPWM_SIP_h
+#ifndef ShiftPWM
+#define ShiftPWM
 
 #include "pins_arduino_compile_time.h" // My own version of pins arduino, which does not define the arrays in program memory
 #include <WProgram.h>
