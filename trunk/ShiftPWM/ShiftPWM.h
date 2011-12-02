@@ -68,8 +68,14 @@ SetGroupOf5(int group, unsigned char v0, unsigned char v1, unsigned char v2, uns
 #define ShiftPWM_H
 
 #include "pins_arduino_compile_time.h" // My own version of pins arduino, which does not define the arrays in program memory
-#include <WProgram.h>
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include <Arduino.h>
+#else
+  #include <WProgram.h>
+#endif
+
 #include "CShiftPWM.h"
+
 
 // These should be defined in the file where ShiftPWM.h is included.
 extern const int ShiftPWM_latchPin;
