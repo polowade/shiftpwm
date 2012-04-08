@@ -49,36 +49,41 @@
  * Debug information for wrong input to functions is also send to the serial port,
  * so check the serial port when you run into problems.
  * 
- * (c) Elco Jacobs, E-atelier Industrial Design TU/e, July 2011.
+ * ShiftPWM v1.04, (c) Elco Jacobs, April 2012.
  * 
  *****************************************************************************/
 //#include <Servo.h>
 #include <SPI.h>
 #include "hsv2rgb.h"
 
+// Clock and data pins are pins from the hardware SPI, you cannot choose them yourself.
+// Data pin is MOSI (Arduino: 11, Arduino Mega: 51, Teensy 2.0: 2, Teensy 2.0++: 22) 
+// Clock pin is SCK (Arduino: 13, Arduino Mega: 52, Teensy 2.0: 1, Teensy 2.0++: 21)
 
-//Data pin is MOSI (atmega168/328: pin 11. Mega: 51) 
-//Clock pin is SCK (atmega168/328: pin 13. Mega: 52)
+// You can choose the latch pin yourself.
 const int ShiftPWM_latchPin=8;
-const bool ShiftPWM_invertOutputs = 1; // if invertOutputs is 1, outputs will be active low. Usefull for common anode RGB led's.
+
+// If your LED's turn on if the pin is low, set this to 1, otherwise set it to 0.
+const bool ShiftPWM_invertOutputs = 0; 
 
 #include <ShiftPWM.h>   // include ShiftPWM.h after setting the pins!
 
-
+// Here you set the number of brightness levels, the update frequency and the number of shift registers.
+// These values affect the load of ShiftPWM.
+// Choose them wisely and use the PrintInterruptLoad() function to verify your load.
 unsigned char maxBrightness = 255;
 unsigned char pwmFrequency = 75;
 int numRegisters = 6;
 
 void setup()   {                
-  pinMode(ShiftPWM_latchPin, OUTPUT);  
-  SPI.setBitOrder(LSBFIRST);
-  // SPI_CLOCK_DIV2 is only a tiny bit faster in sending out the last byte. 
-  // SPI transfer and calculations overlap for the other bytes.
+  pinMode(ShiftPWM_latchPin, OUTPUT);
+  SPI.setBitOrder(LSBFIRST); // The least significant bit shoult be sent out by the SPI port first.
+  // Here you can set the clock speed of the SPI port. Default is DIV4, which is 4MHz with a 16Mhz system clock.
+  // If you encounter problems due to long wires or capacitive loads, try lowering the SPI clock.
   SPI.setClockDivider(SPI_CLOCK_DIV4); 
   SPI.begin(); 
 
   Serial.begin(9600);
-
 
   ShiftPWM.SetAmountOfRegisters(numRegisters);
   ShiftPWM.Start(pwmFrequency,maxBrightness);  
@@ -88,8 +93,10 @@ void setup()   {
 
 void loop()
 {    
-  // Print information about the interrupt frequency, duration and load on your program
+  // Turn all LED's off.
   ShiftPWM.SetAll(0);
+
+  // Print information about the interrupt frequency, duration and load on your program
   ShiftPWM.PrintInterruptLoad();
 
   // Fade in and fade out all outputs one by one fast. Usefull for testing your circuit
@@ -125,23 +132,22 @@ void loop()
 }
 
 void rgbLedRainbow(int numRGBLeds, int delayVal, int numCycles, int maxBrightness, int rainbowWidth){
-  // Displays a rainbow spread over all LED's, which shifts in hue.
+  // Displays a rainbow spread over a few LED's (numRGBLeds), which shifts in hue. The rainbow can be wider then the real number of LED's.
   int hue, sat, val; 
   unsigned char red, green, blue;
 
   ShiftPWM.SetAll(0);
-  for(int cycle=0;cycle<numCycles;cycle++){ // shift the raibom numCycles times
+  for(int cycle=0;cycle<numCycles;cycle++){ // loop through the hue shift a number of times (numCycles)
     for(int colorshift=0;colorshift<360;colorshift++){ // Shift over full color range (like the hue slider in photoshop)
       for(int led=0;led<numRGBLeds;led++){ // loop over all LED's
         hue = ((led)*360/(rainbowWidth-1)+colorshift)%360; // Set hue from 0 to 360 from first to last led and shift the hue
         sat = 255;
         val = 255;
         hsv2rgb(hue, sat, val, &red, &green, &blue, maxBrightness); // convert hsv to rgb values
-        ShiftPWM.SetGroupOf3(led, red, green, blue); // write rgb values
+        ShiftPWM.SetGroupOf3(led, red, green, blue); // write the rgb values
       }
-      delay(delayVal);
+      delay(delayVal); // this delay value determines the speed of hue shift
     } 
   }  
 }
-
 

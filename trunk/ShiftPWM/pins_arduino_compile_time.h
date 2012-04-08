@@ -252,9 +252,43 @@ const uint8_t digital_pin_to_bit_PGM_ct[] = {
 	7         , // PK 7 ** 69 ** A15
 };
 
+#elif defined(__AVR_ATmega32U4__) && defined(CORE_TEENSY)
+
+volatile uint8_t * const port_to_output_PGM_ct[] = {
+	NOT_A_PORT, NOT_A_PORT, &PORTB, &PORTC, &PORTD, &PORTE, &PORTF
+};
+const uint8_t digital_pin_to_port_PGM_ct[] = {
+	PB, PB, PB, PB, PB, PD, PD, PD, PD, PC, PC,
+	PD, PD, PB, PB, PB, PF, PF, PF, PF, PF, PF,
+	PD, PD, PE
+};
+const uint8_t digital_pin_to_bit_PGM_ct[] = {
+	0,  1,  2,  3,  7,  0,  1,  2,  3,  6,  7,
+	6,  7,  4,  5,  6,  7,  6,  5,  4,  1,  0,
+	4,  5,  6
+};
+
+#elif defined(__AVR_AT90USB1286__) && defined(CORE_TEENSY)
+
+volatile uint8_t * const port_to_output_PGM_ct[] = {
+        NOT_A_PORT, &PORTA, &PORTB, &PORTC, &PORTD, &PORTE, &PORTF
+};
+const uint8_t digital_pin_to_port_PGM_ct[] = {
+	PD, PD, PD, PD, PD, PD, PD, PD, PE, PE,
+	PC, PC, PC, PC, PC, PC, PC, PC, PE, PE,
+	PB, PB, PB, PB, PB, PB, PB, PB, PA, PA,
+	PA, PA, PA, PA, PA, PA, PE, PE, PF, PF,
+	PF, PF, PF, PF, PF, PF
+};
+const uint8_t digital_pin_to_bit_PGM_ct[] = {
+	0,  1,  2,  3,  4,  5,  6,  7,  0,  1,
+	0,  1,  2,  3,  4,  5,  6,  7,  6,  7,
+	0,  1,  2,  3,  4,  5,  6,  7,  0,  1,
+	2,  3,  4,  5,  6,  7,  4,  5,  0,  1,
+	2,  3,  4,  5,  6,  7
+};
 
 #else
-
 
 // these arrays map port names (e.g. port B) to the
 // appropriate addresses for various functions (e.g. reading
